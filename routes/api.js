@@ -12,7 +12,7 @@ const option = process.env['option']
 const database = process.env['database']
 
 // Mongo_URI
-const mongo_URI = `mongodb+srv://${user}:${pass}@${cluster}/${database}?${option}`;
+const mongo_URI = `mongodb+srv://${user}:${pass}@$cluster0.snt16.mongodb.net/${database}?${option}`;
   
 // MongoDB Connect Config
 mongoose.set('strictQuery', false);
@@ -46,6 +46,8 @@ module.exports = function (app) {
     .post(function (req, res){
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
+      let entry = new Project();
+      entry.issue_title = req.body.issue_title;
     })
     
     .put(function (req, res){

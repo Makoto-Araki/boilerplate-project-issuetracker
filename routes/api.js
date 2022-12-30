@@ -1,8 +1,7 @@
 'use strict';
 
-// Import & Config
+// Import
 const mongoose = require('mongoose');
-
 
 // Schema
 const projectSchema = new mongoose.Schema({
@@ -54,7 +53,9 @@ module.exports = function (app) {
     .post(function (req, res){
 
       // Required fields missing check
-      if (req.body.issue_title === '' || req.body.issue_text === '' || req.body.created_by === '') {
+      if (req.body.issue_title === '' ||
+          req.body.issue_text === '' ||
+          req.body.created_by === '') {
         res.json({ error: 'required field(s) missing' });
       }
       
@@ -109,12 +110,12 @@ module.exports = function (app) {
       }
 
       // Hold each value
-      temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
-      temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
-      temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
-      temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
-      temp5 = !req.body.hasOwnProperty('open') ? true : req.body.open ;
-      temp6 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
+      let temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
+      let temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
+      let temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
+      let temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
+      let temp5 = !req.body.hasOwnProperty('open') ? true : req.body.open ;
+      let temp6 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
 
       // Model and collection are made under the name of req.params.project
       let project = req.params.project;
@@ -130,6 +131,7 @@ module.exports = function (app) {
             assigned_to: temp4,
             open: temp5,
             status_text: temp6,
+            updated_on: new Date(),
           }
         },
         (err, doc) => {
@@ -144,8 +146,34 @@ module.exports = function (app) {
 
     // DELETE - URL/api/issues/:project
     .delete(function (req, res){
+
+      // Required fields missing check
+      if (!req.body.hasOwnProperty('_id')) {
+        res.json({ error: 'missing _id' });
+      }
+
+      // Model and collection are made under the name of req.params.project
       let project = req.params.project;
-      //
+      let Project = mongoose.model(project, projectSchema);
+
+      // Document is going to be deleted
+      Project
+        .findById(req.body._id)
+        .exec((err, doc) => {
+          if (!doc) {
+            res.json({ error: 'could not delete', '_id': req.body._id });
+          } else {
+            Project.deleteOne(
+              { _id: { $eq: req.body._id } },
+              (err, doc) => {
+                if (!err) {
+                  res.json({ result: 'successfully deleted', '_id': req.body._id })
+                } else {
+                  console.error(err);
+                }
+              }
+            );
+          }
+        });
     });
-    
 };

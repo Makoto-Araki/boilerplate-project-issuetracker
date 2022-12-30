@@ -25,8 +25,10 @@ module.exports = function (app) {
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
 
+      // Document is going to be selected
       Project
         .find(req.query)
+        .select({ __v: 0 })
         .exec((err, doc) => {
           if (!err) {
             res.json(doc);

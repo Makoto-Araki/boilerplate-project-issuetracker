@@ -25,51 +25,45 @@ module.exports = function (app) {
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
 
-      // Processing changes depending on whether req.query is specified
-      if (!req.query) {
-        Project
-          .find({})
-          .exec((err, doc) => {
-            if (!err) {
-              res.json(doc);
-            } else {
-              console.error(err);
-            }
-          });
-      } else {
-        Project
-          .find(req.query)
-          .exec((err, doc) => {
-            if (!err) {
-              res.json(doc);
-            } else {
-              console.error(err);
-            }
-          });
-      }
+      Project
+        .find(req.query)
+        .exec((err, doc) => {
+          if (!err) {
+            res.json(doc);
+          } else {
+            console.error(err);
+          }
+        });
     })
 
     // POST - URL/api/issues/:project
     .post(function (req, res){
 
       // Required fields missing check
-      if (req.body.issue_title === '' ||
-          req.body.issue_text === '' ||
-          req.body.created_by === '') {
+      if (!req.body.hasOwnProperty('issue_title') ||
+          !req.body.hasOwnProperty('issue_text') ||
+          !req.body.hasOwnProperty('created_by')) {
         res.json({ error: 'required field(s) missing' });
       }
-      
+
+      // Hold each value
+      let temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
+      let temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
+      let temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
+      let temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
+      let temp5 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
+
       // Model and collection are made under the name of req.params.project
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
       let entry = new Project();
 
       // Form data is set in document
-      entry.issue_title = req.body.issue_title;
-      entry.issue_text = req.body.issue_text;
-      entry.created_by = req.body.created_by;
-      entry.assigned_to = req.body.assigned_to;
-      entry.status_text = req.body.status_text;
+      entry.issue_title = temp1;
+      entry.issue_text = temp2;
+      entry.created_by = temp3;
+      entry.assigned_to = temp4;
+      entry.status_text = temp5;
 
       // Document is going to be saved
       entry.save((err, doc) => {

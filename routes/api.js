@@ -18,10 +18,40 @@ const projectSchema = new mongoose.Schema({
 
 module.exports = function (app) {
   app.route('/api/issues/:project')
-  
+
+    // GET - URL/api/issues/:project
     .get(function (req, res){
+      
+      // Model and collection are made under the name of req.params.project
       let project = req.params.project;
-      //
+      let Project = mongoose.model(project, projectSchema);
+
+      // For Debug
+      console.dir('AAA : ' + req.query);
+      console.log('BBB : ' + req.query);
+
+      // Processing changes depending on whether req.query is specified
+      if (!req.query) {
+        Project
+          .find({})
+          .exec((err, doc) => {
+            if (!err) {
+              res.json(doc);
+            } else {
+              console.error(err);
+            }
+          });
+      } else {
+        Project
+          .find(req.query)
+          .exec((err, doc) => {
+            if (!err) {
+              res.json(doc);
+            } else {
+              console.error(err);
+            }
+          });
+      }
     })
 
     // POST - URL/api/issues/:project
@@ -48,7 +78,10 @@ module.exports = function (app) {
             issue_text: doc.issue_text,
             created_by: doc.created_by,
             assigned_to: doc.assigned_to,
+            open: doc.open,
             status_text: doc.status_text,
+            created_on: doc.created_on,
+            updated_on: doc.updated_on,
           });
         } else {
           console.error(err);

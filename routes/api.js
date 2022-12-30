@@ -26,10 +26,6 @@ module.exports = function (app) {
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
 
-      // For Debug
-      console.dir('AAA : ' + req.query);
-      console.log('BBB : ' + req.query);
-
       // Processing changes depending on whether req.query is specified
       if (!req.query) {
         Project
@@ -56,6 +52,11 @@ module.exports = function (app) {
 
     // POST - URL/api/issues/:project
     .post(function (req, res){
+
+      // Required fields missing check
+      if (req.body.issue_title === '' || req.body.issue_text === '' || req.body.created_by === '') {
+        res.json({ error: 'required field(s) missing' });
+      }
       
       // Model and collection are made under the name of req.params.project
       let project = req.params.project;
@@ -88,12 +89,60 @@ module.exports = function (app) {
         }
       });
     })
-    
+
+    // PUT - URL/api/issues/:project
     .put(function (req, res){
+      
+      // Required fields missing check - 1
+      if (!req.body.hasOwnProperty('_id')) {
+        res.json({ error: 'missing _id' });
+      }
+
+      // Required fields missing check - 2
+      if (!req.body.hasOwnProperty('issue_title') && 
+          !req.body.hasOwnProperty('issue_text') && 
+          !req.body.hasOwnProperty('created_by') && 
+          !req.body.hasOwnProperty('assigned_to') && 
+          !req.body.hasOwnProperty('open') && 
+          !req.body.hasOwnProperty('status_text')) {
+        res.json({ error: 'could not update', '_id': req.body._id });
+      }
+
+      // Hold each value
+      temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
+      temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
+      temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
+      temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
+      temp5 = !req.body.hasOwnProperty('open') ? true : req.body.open ;
+      temp6 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
+
+      // Model and collection are made under the name of req.params.project
       let project = req.params.project;
-      //
+      let Project = mongoose.model(project, projectSchema);
+
+      // Document is going to be updated
+      Project.updateOne(
+        { _id: { $eq: req.body._id } },
+        { $set: {
+            issue_title: temp1,
+            issue_text: temp2,
+            created_by: temp3,
+            assigned_to: temp4,
+            open: temp5,
+            status_text: temp6,
+          }
+        },
+        (err, doc) => {
+          if (!err) {
+            res.json({ result: 'successfully updated', '_id': req.body._id })
+          } else {
+            console.error(err);
+          }
+        }
+      );
     })
-    
+
+    // DELETE - URL/api/issues/:project
     .delete(function (req, res){
       let project = req.params.project;
       //

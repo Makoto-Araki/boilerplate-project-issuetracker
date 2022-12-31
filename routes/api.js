@@ -109,27 +109,30 @@ module.exports = function (app) {
     // PUT - URL/api/issues/:project
     .put(function (req, res){
       
-      // Required fields missing check - 1
+      // Field check
       if (!req.body.hasOwnProperty('_id')) {
         return res.json({ error: 'missing _id' });
       }
 
-      // Required fields missing check - 2
-      if (!req.body.hasOwnProperty('issue_title') || 
-          !req.body.hasOwnProperty('issue_text') || 
-          !req.body.hasOwnProperty('created_by') || 
-          !req.body.hasOwnProperty('assigned_to') || 
+      // Field check
+      if (!req.body.hasOwnProperty('issue_title') && 
+          !req.body.hasOwnProperty('issue_text') && 
+          !req.body.hasOwnProperty('created_by') && 
+          !req.body.hasOwnProperty('assigned_to') &&
+          !req.body.hasOwnProperty('open') &&
           !req.body.hasOwnProperty('status_text')) {
         return res.json({ error: 'no update field(s) sent', '_id': req.body._id });
       }
 
-      // Hold each value
-      let temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
-      let temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
-      let temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
-      let temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
-      let temp5 = !req.body.hasOwnProperty('open') ? true : req.body.open ;
-      let temp6 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
+      // Summarize update data
+      let target = {};
+      if (req.body.hasOwnProperty('issue_title')) target.issue_title = req.body.issue_title;
+      if (req.body.hasOwnProperty('issue_text')) target.issue_text = req.body.issue_text;
+      if (req.body.hasOwnProperty('created_by')) target.created_by = req.body.created_by;
+      if (req.body.hasOwnProperty('assigned_to')) target.assigned_to = req.body.assigned_to;
+      if (req.body.hasOwnProperty('open')) target.open = req.body.open;
+      if (req.body.hasOwnProperty('status_text')) target.status_text = req.body.status_text;
+      target.updated_on = new Date();
 
       // Model is made under the name of req.params.project
       let project = req.params.project;
@@ -144,16 +147,7 @@ module.exports = function (app) {
           } else {
             Project.updateOne(
               { _id: { $eq: req.body._id } },
-              { $set: {
-                  issue_title: temp1,
-                  issue_text: temp2,
-                  created_by: temp3,
-                  assigned_to: temp4,
-                  open: temp5,
-                  status_text: temp6,
-                  updated_on: new Date(),
-                }
-              },
+              { $set: target },
               (err, doc) => {
                 if (!err) {
                   return res.json({ result: 'successfully updated', '_id': req.body._id })

@@ -31,7 +31,24 @@ module.exports = function (app) {
         .select({ __v: 0 })
         .exec((err, doc) => {
           if (!err) {
-            res.json(doc);
+            
+            // Create object array in the same order of properties as the sample
+            let result = [];
+            for (let i = 0; i < doc.length; i++) {
+              let object = {};
+              object.assigned_to = doc[i].assigned_to;
+              object.status_text = doc[i].status_text;
+              object.open = doc[i].open;
+              object._id = doc[i]._id;
+              object.issue_title = doc[i].issue_title;
+              object.issue_text = doc[i].issue_text;
+              object.created_by = doc[i].created_by;
+              object.created_on = doc[i].created_on;
+              object.updated_on = doc[i].updated_on;
+              result.push(object);
+            }
+            
+            res.json(result);
           } else {
             console.error(err);
           }
@@ -92,26 +109,18 @@ module.exports = function (app) {
       
       // Required fields missing check - 1
       if (!req.body.hasOwnProperty('_id')) {
-        res.json({ error: 'missing _id' });
+        return res.json({ error: 'missing _id' });
       }
 
       // Required fields missing check - 2
-      if (!req.body.hasOwnProperty('issue_title') && 
-          !req.body.hasOwnProperty('issue_text') && 
-          !req.body.hasOwnProperty('created_by') && 
-          !req.body.hasOwnProperty('assigned_to') && 
-          !req.body.hasOwnProperty('open') && 
+      if (!req.body.hasOwnProperty('issue_title') || 
+          !req.body.hasOwnProperty('issue_text') || 
+          !req.body.hasOwnProperty('created_by') || 
+          !req.body.hasOwnProperty('assigned_to') || 
+          !req.body.hasOwnProperty('open') || 
           !req.body.hasOwnProperty('status_text')) {
-        res.json({ error: 'could not update', '_id': req.body._id });
+        return res.json({ error: 'no update field(s) sent', '_id': req.body._id });
       }
-
-      // Hold each value
-      let temp1 = !req.body.hasOwnProperty('issue_title') ? '' : req.body.issue_title ;
-      let temp2 = !req.body.hasOwnProperty('issue_text') ? '' : req.body.issue_text ;
-      let temp3 = !req.body.hasOwnProperty('created_by') ? '' : req.body.created_by ;
-      let temp4 = !req.body.hasOwnProperty('assigned_to') ? '' : req.body.assigned_to ;
-      let temp5 = !req.body.hasOwnProperty('open') ? true : req.body.open ;
-      let temp6 = !req.body.hasOwnProperty('status_text') ? '' : req.body.status_text ;
 
       // Model and collection are made under the name of req.params.project
       let project = req.params.project;
@@ -121,20 +130,20 @@ module.exports = function (app) {
       Project.updateOne(
         { _id: { $eq: req.body._id } },
         { $set: {
-            issue_title: temp1,
-            issue_text: temp2,
-            created_by: temp3,
-            assigned_to: temp4,
-            open: temp5,
-            status_text: temp6,
+            issue_title: req.body.issue_title,
+            issue_text: req.body.issue_text,
+            created_by: req.body.created_by,
+            assigned_to: req.body.assigned_to,
+            open: req.body.open,
+            status_text: req.body.status_text,
             updated_on: new Date(),
           }
         },
         (err, doc) => {
           if (!err) {
-            res.json({ result: 'successfully updated', '_id': req.body._id })
+            return res.json({ result: 'successfully updated', '_id': req.body._id });
           } else {
-            console.error(err);
+            return res.json({ error: 'could not update', '_id': req.body._id });
           }
         }
       );

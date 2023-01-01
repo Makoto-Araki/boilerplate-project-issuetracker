@@ -7,8 +7,6 @@ chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
 
-  /* ------------------------------------------------------- */
-
   // Timeout 5 seconds
   this.timeout(5000);
 
@@ -85,8 +83,6 @@ suite('Functional Tests', function() {
       });
   });
   
-  /* ------------------------------------------------------- 
-
   // GET - URL/api/issues/:project
   test('View issues on a project', (done) => {
     chai
@@ -218,8 +214,6 @@ suite('Functional Tests', function() {
       });
   });
 
-  /* ------------------------------------------------------- 
-  
   // PUT - URL/api/issues/:project
   test('Update one field on an issue', (done) => {
     chai
@@ -312,8 +306,6 @@ suite('Functional Tests', function() {
       });
   });
 
-  /* ------------------------------------------------------- 
-
   // DELETE - URL/api/issues/:project
   test('Delete an issue', (done) => {
     chai
@@ -330,7 +322,41 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  
+
+  // DELETE - URL/api/issues/:project
+  test('Delete an issue with an invalid', (done) => {
+    chai
+      .request(server)
+      .delete('/api/issues/project4')
+      .send({
+        _id: '63afb4c8f9b116416156dfaa',  // 2nd document in my collection, open = false
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.result, 'successfully deleted');
+        assert.equal(res.body._id, '63afb4c8f9b116416156dfaa');
+        done();
+      });
+  });
+
+  // DELETE - URL/api/issues/:project
+  test('Delete an issue with missing', (done) => {
+    chai
+      .request(server)
+      .delete('/api/issues/project4')
+      .send({
+        _id: '63afb4c8f9b116416156dAAA',  // missing
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.error, 'could not delete');
+        assert.equal(res.body._id, '63afb4c8f9b116416156dAAA');
+        done();
+      });
+  });
+
   /* ------------------------------------------------------- */
   
 });

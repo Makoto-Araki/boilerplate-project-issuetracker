@@ -25,6 +25,9 @@ module.exports = function (app) {
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
 
+      // For Debug
+      // console.dir(req.query);
+
       // Document is going to be selected
       Project
         .find(req.query)
@@ -165,7 +168,7 @@ module.exports = function (app) {
 
       // Required fields missing check
       if (!req.body.hasOwnProperty('_id')) {
-        res.json({ error: 'missing _id' });
+        return res.json({ error: 'missing _id' });
       }
 
       // Model is made under the name of req.params.project
@@ -177,15 +180,15 @@ module.exports = function (app) {
         .findById(req.body._id)
         .exec((err, doc) => {
           if (!doc) {
-            res.json({ error: 'could not delete', '_id': req.body._id });
+            return res.json({ error: 'could not delete', '_id': req.body._id });
           } else {
-            Project.remove(
+            Project.deleteOne(
               { _id: req.body._id },
               (err, doc) => {
                 if (!err) {
-                  res.json({ result: 'successfully deleted', '_id': req.body._id })
+                  return res.json({ result: 'successfully deleted', '_id': req.body._id })
                 } else {
-                  res.json({ error: 'could not delete', '_id': req.body._id });
+                  return res.json({ error: 'could not delete', '_id': req.body._id });
                 }
               }
             );

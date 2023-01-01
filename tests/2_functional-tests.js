@@ -226,7 +226,7 @@ suite('Functional Tests', function() {
       .request(server)
       .put('/api/issues/project3')
       .send({
-        _id: '63afb4acf9b116416156dfa8',
+        _id: '63afb4acf9b116416156dfa8',  // 1st document in my collection
         status_text: 'fixed',
       })
       .end((err, res) => {
@@ -238,6 +238,99 @@ suite('Functional Tests', function() {
       });
   });
 
+  // PUT - URL/api/issues/:project
+  test('Update multiple fields on an issue', (done) => {
+    chai
+      .request(server)
+      .put('/api/issues/project3')
+      .send({
+        _id: '63afb4acf9b116416156dfa8',  // 1st document in my collection
+        issue_text: 'new bug',
+        assigned_to: 'takeshi',
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.result, 'successfully updated');
+        assert.equal(res.body._id, '63afb4acf9b116416156dfa8');
+        done();
+      });
+  });
+
+  // PUT - URL/api/issues/:project
+  test('Update an issue with missing', (done) => {
+    chai
+      .request(server)
+      .put('/api/issues/project3')
+      .send({
+        _id: '63afb4acf9b116416156dAAA',  // missing
+        assigned_to: 'takeshi',
+        status_text: 'fixed',
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.error, 'could not update');
+        assert.equal(res.body._id, '63afb4acf9b116416156dAAA');
+        done();
+      });
+  });
+
+  // PUT - URL/api/issues/:project
+  test('Update an issue with no fields to update', (done) => {
+    chai
+      .request(server)
+      .put('/api/issues/project3')
+      .send({
+        _id: '63afb4c8f9b116416156dfaa',  // 2nd document in my collection
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.error, 'no update field(s) sent');
+        assert.equal(res.body._id, '63afb4c8f9b116416156dfaa');
+        done();
+      });
+  });
+
+  // PUT - URL/api/issues/:project
+  test('Update an issue with an invalid', (done) => {
+    chai
+      .request(server)
+      .put('/api/issues/project3')
+      .send({
+        _id: '63afb707cbcc6d65c6d2a4d5',  // 3rd document in my collection, open = false
+        assigned_to: 'root',
+        status_text: 'end',
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.result, 'successfully updated');
+        assert.equal(res.body._id, '63afb707cbcc6d65c6d2a4d5');
+        done();
+      });
+  });
+
+  /* ------------------------------------------------------- 
+
+  // DELETE - URL/api/issues/:project
+  test('Delete an issue', (done) => {
+    chai
+      .request(server)
+      .delete('/api/issues/project4')
+      .send({
+        _id: '63afb4acf9b116416156dfa8',  // 1st document in my collection
+      })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, 'application/json');
+        assert.equal(res.body.result, 'successfully deleted');
+        assert.equal(res.body._id, '63afb4acf9b116416156dfa8');
+        done();
+      });
+  });
+  
   /* ------------------------------------------------------- */
   
 });

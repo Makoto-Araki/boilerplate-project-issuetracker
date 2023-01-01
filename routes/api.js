@@ -179,8 +179,8 @@ module.exports = function (app) {
           if (!doc) {
             res.json({ error: 'could not delete', '_id': req.body._id });
           } else {
-            Project.deleteOne(
-              { _id: { $eq: req.body._id } },
+            Project.remove(
+              { _id: req.body._id },
               (err, doc) => {
                 if (!err) {
                   res.json({ result: 'successfully deleted', '_id': req.body._id })

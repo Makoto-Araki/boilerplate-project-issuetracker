@@ -25,12 +25,15 @@ module.exports = function (app) {
       let project = req.params.project;
       let Project = mongoose.model(project, projectSchema);
 
-      // For Debug
-      // console.dir(req.query);
+      // Search option
+      let option = {};
+      if (Object.keys(req.query).length > 0) {
+        option = {...req.query};
+      }
 
       // Document is going to be selected
       Project
-        .find(req.query)
+        .find(option)
         .select({ __v: 0 })
         .exec((err, doc) => {
           if (!err) {
@@ -65,7 +68,7 @@ module.exports = function (app) {
       if (!req.body.hasOwnProperty('issue_title') ||
           !req.body.hasOwnProperty('issue_text') ||
           !req.body.hasOwnProperty('created_by')) {
-        res.json({ error: 'required field(s) missing' });
+        return res.json({ error: 'required field(s) missing' });
       }
 
       // Hold each value
@@ -92,7 +95,7 @@ module.exports = function (app) {
       // Document is going to be saved
       entry.save((err, doc) => {
         if (!err) {
-          res.json({
+          return res.json({
             _id: doc._id,
             issue_title: doc.issue_title,
             issue_text: doc.issue_text,

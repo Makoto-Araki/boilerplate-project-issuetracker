@@ -10,7 +10,7 @@ suite('Functional Tests', function() {
   // Timeout 5 seconds
   this.timeout(5000);
 
-  // Hold _id value
+  // Hold value
   let id1 = '';
   let id2 = '';
   let missing = 'AAAfb4acf9b116416156dBBB';
@@ -19,7 +19,7 @@ suite('Functional Tests', function() {
   let id2_created = '';
   let id2_updated = '';
 
-  /* ------------------------------------------------------- 
+  /* ------------------------------------------------------- */
 
   // POST - URL/api/issues/:project
   test('Create an issue with every field', (done) => {
